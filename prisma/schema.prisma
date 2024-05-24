@@ -1,0 +1,542 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  // binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+  // Further reading:
+  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String  @id @default(cuid())
+  name     String?
+  email    String? @unique
+  password String
+  role     String
+  dinasId  String?
+
+  Dinas Dinas? @relation(fields: [dinasId], references: [id])
+}
+
+model Dinas {
+  id                    String                  @id @default(cuid())
+  name                  String
+  users                 User[]
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  AnggaranDPA           AnggaranDPA[]
+  PembangunanDPA        PembangunanDPA[]
+  AnggaranRealisasi     AnggaranRealisasi[]
+  PembangunanMonitoring PembangunanMonitoring[]
+}
+
+model Satuan {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SumberDana {
+  id                String              @id @default(cuid())
+  kode              String?
+  name              String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  AnggaranDPASub    AnggaranDPASub[]
+  PembangunanDPASub PembangunanDPASub[]
+  KelompokDana      KelompokDana[]
+}
+
+model KelompokDana {
+  id           String   @id @default(cuid())
+  kode         String   @default("0")
+  name         String   @db.VarChar(500)
+  sumberDanaId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sumberdana SumberDana  @relation(fields: [sumberDanaId], references: [id])
+  JenisDana  JenisDana[]
+}
+
+model JenisDana {
+  id             String   @id @default(cuid())
+  kode           String   @default("0")
+  name           String   @db.VarChar(500)
+  kelompokDanaId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  kelompokdana KelompokDana @relation(fields: [kelompokDanaId], references: [id])
+  ObjekDana    ObjekDana[]
+}
+
+model ObjekDana {
+  id          String   @id @default(cuid())
+  kode        String   @default("0")
+  name        String   @db.VarChar(500)
+  jenisDanaId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  jenisdana        JenisDana          @relation(fields: [jenisDanaId], references: [id])
+  RincianObjekDana RincianObjekDana[]
+}
+
+model RincianObjekDana {
+  id          String   @id @default(cuid())
+  kode        String   @default("0")
+  name        String   @db.VarChar(500)
+  objekDanaId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  objekdana           ObjekDana             @relation(fields: [objekDanaId], references: [id])
+  SubRincianObjekDana SubRincianObjekDana[]
+}
+
+model SubRincianObjekDana {
+  id            String   @id @default(cuid())
+  kode          String   @default("0")
+  name          String   @db.VarChar(500)
+  rincianDanaId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  RincianObjekDana RincianObjekDana @relation(fields: [rincianDanaId], references: [id])
+}
+
+model SumberAkun {
+  id           String         @id @default(cuid())
+  kode         String?
+  name         String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  KelompokAkun KelompokAkun[]
+}
+
+model KelompokAkun {
+  id           String   @id @default(cuid())
+  kode         String   @default("0")
+  name         String   @db.VarChar(500)
+  sumberAkunId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sumberakun SumberAkun  @relation(fields: [sumberAkunId], references: [id])
+  JenisAkun  JenisAkun[]
+}
+
+model JenisAkun {
+  id             String   @id @default(cuid())
+  kode           String   @default("0")
+  name           String   @db.VarChar(500)
+  kelompokAkunId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  kelompokakun KelompokAkun @relation(fields: [kelompokAkunId], references: [id])
+  ObjekAkun    ObjekAkun[]
+}
+
+model ObjekAkun {
+  id          String   @id @default(cuid())
+  kode        String   @default("0")
+  name        String   @db.VarChar(500)
+  jenisAkunId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  jenisakun        JenisAkun          @relation(fields: [jenisAkunId], references: [id])
+  RincianObjekAkun RincianObjekAkun[]
+}
+
+model RincianObjekAkun {
+  id          String   @id @default(cuid())
+  kode        String   @default("0")
+  name        String   @db.VarChar(500)
+  objekAkunId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  objekakun           ObjekAkun             @relation(fields: [objekAkunId], references: [id])
+  SubRincianObjekAkun SubRincianObjekAkun[]
+}
+
+model SubRincianObjekAkun {
+  id            String   @id @default(cuid())
+  kode          String   @default("0")
+  name          String   @db.VarChar(500)
+  rincianAkunId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  RincianObjekAkun RincianObjekAkun @relation(fields: [rincianAkunId], references: [id])
+}
+
+model Urusan {
+  id        String   @id @default(cuid())
+  kode      String   @default("0")
+  name      String   @db.VarChar(500)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Bidang    Bidang[]
+}
+
+model Bidang {
+  id        String   @id @default(cuid())
+  kode      String   @default("0")
+  name      String   @db.VarChar(500)
+  urusanId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  urusan  Urusan    @relation(fields: [urusanId], references: [id])
+  Program Program[]
+}
+
+model Program {
+  id        String   @id @default(cuid())
+  kode      String   @default("0")
+  name      String   @db.VarChar(500)
+  bidangId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bidang   Bidang     @relation(fields: [bidangId], references: [id])
+  Kegiatan Kegiatan[]
+}
+
+model Kegiatan {
+  id        String   @id @default(cuid())
+  kode      String   @default("0")
+  name      String   @db.VarChar(500)
+  programId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  program        Program          @relation(fields: [programId], references: [id])
+  SubKegiatan    SubKegiatan[]
+  AnggaranDPA    AnggaranDPA[]
+  PembangunanDPA PembangunanDPA[]
+}
+
+model SubKegiatan {
+  id         String   @id @default(cuid())
+  kode       String   @default("0")
+  name       String   @db.VarChar(500)
+  kegiatanId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  kegiatan              Kegiatan                @relation(fields: [kegiatanId], references: [id])
+  AnggaranDPASub        AnggaranDPASub[]
+  PembangunanDPASub     PembangunanDPASub[]
+  AnggaranRealisasi     AnggaranRealisasi[]
+  PembangunanMonitoring PembangunanMonitoring[]
+}
+
+model Organisasi {
+  id        String   @id @default(cuid())
+  kode      String   @default("0")
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Unit      Unit[]
+}
+
+model Tahun {
+  id        String   @id @default(cuid())
+  name      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Unit {
+  id           String   @id @default(cuid())
+  kode         String   @default("0")
+  name         String
+  organisasiId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  organisasi     Organisasi       @relation(fields: [organisasiId], references: [id])
+  AnggaranDPA    AnggaranDPA[]
+  PembangunanDPA PembangunanDPA[]
+}
+
+model AnggaranDPA {
+  id            String  @id @default(cuid())
+  no            String?
+  dinasId       String
+  jumlahAlokasi Int?
+  teralokasi    Int?    @default(0)
+  sisaAlokasi   Int?    @default(0)
+  tahun         Int?
+  kegiatanId    String?
+  unitId        String?
+
+  operasi      Int? @default(0)
+  oteralokasi  Int? @default(0)
+  osisaAlokasi Int? @default(0)
+
+  modal        Int? @default(0)
+  mteralokasi  Int? @default(0)
+  msisaAlokasi Int? @default(0)
+
+  takTerduga    Int? @default(0)
+  ttteralokasi  Int? @default(0)
+  ttsisaAlokasi Int? @default(0)
+
+  transfer     Int? @default(0)
+  tteralokasi  Int? @default(0)
+  tsisaAlokasi Int? @default(0)
+
+  dateline DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Kegiatan            Kegiatan?                     @relation(fields: [kegiatanId], references: [id])
+  Unit                Unit?                         @relation(fields: [unitId], references: [id])
+  Dinas               Dinas                         @relation(fields: [dinasId], references: [id])
+  AnggaranDPASub      AnggaranDPASub[]
+  AnggaranDPARencana  AnggaranDPARencanaPenarikan[]
+  AnggaranDPAPengguna AnggaranDPAPengguna[]
+  AnggaranDPATtd      AnggaranDPATtd[]
+}
+
+model AnggaranDPASub {
+  id               String @id @default(cuid())
+  dpaId            String
+  subKegiatanId    String
+  sumberDanaId     String
+  lokasi           String
+  target           String
+  waktuPelaksanaan String
+  keterangan       String
+  operasi          Int
+  modal            Int
+  takTerduga       Int
+  transfer         Int
+  total            Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  SumberDana  SumberDana  @relation(fields: [sumberDanaId], references: [id])
+  DPA         AnggaranDPA @relation(fields: [dpaId], references: [id])
+  subkegiatan SubKegiatan @relation(fields: [subKegiatanId], references: [id])
+}
+
+model AnggaranDPARencanaPenarikan {
+  id         String @id @default(cuid())
+  bulan      Int
+  operasi    Int    @default(0)
+  modal      Int    @default(0)
+  takTerduga Int    @default(0)
+  transfer   Int    @default(0)
+  total      Int    @default(0)
+  dpaId      String
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  DPA       AnggaranDPA @relation(fields: [dpaId], references: [id])
+}
+
+model AnggaranDPAPengguna {
+  id      String @id @default(cuid())
+  dpaId   String
+  nama    String
+  nip     String
+  jabatan String
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  DPA       AnggaranDPA @relation(fields: [dpaId], references: [id])
+}
+
+model AnggaranDPATtd {
+  id      String @id @default(cuid())
+  dpaId   String
+  nama    String
+  nip     String
+  jabatan String
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  DPA       AnggaranDPA @relation(fields: [dpaId], references: [id])
+}
+
+model AnggaranRealisasi {
+  id            String @id @default(cuid())
+  subKegiatanId String
+  pagu          Int
+  terrealisasi  Int
+  operasi       Int?   @default(0)
+  orealiasi     Int?   @default(0)
+  osisa         Int?   @default(0)
+  modal         Int?   @default(0)
+  mrealisasi    Int?   @default(0)
+  msisa         Int?   @default(0)
+  takTerduga    Int?   @default(0)
+  ttrealisasi   Int?   @default(0)
+  ttsisa        Int?   @default(0)
+  transfer      Int?   @default(0)
+  trealisasi    Int?   @default(0)
+  tsisa         Int?   @default(0)
+
+  dinasId String
+  tahun   Int
+  status  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  SubKegiatan                  SubKegiatan                    @relation(fields: [subKegiatanId], references: [id])
+  AnggaranRealisasiPengambilan AnggaranRealisasiPengambilan[]
+  Dinas                        Dinas                          @relation(fields: [dinasId], references: [id])
+}
+
+model AnggaranRealisasiPengambilan {
+  id String @id @default(cuid())
+
+  bulan       Int
+  operasi     Int    @default(0)
+  modal       Int    @default(0)
+  takTerduga  Int    @default(0)
+  transfer    Int    @default(0)
+  keterangan  String
+  realisasiId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  AnggaranRealisasi AnggaranRealisasi @relation(fields: [realisasiId], references: [id])
+}
+
+model PembangunanDPA {
+  id            String  @id @default(cuid())
+  no            String?
+  dinasId       String
+  jumlahAlokasi Int?
+  teralokasi    Int?    @default(0)
+  sisaAlokasi   Int?    @default(0)
+  tahun         Int?
+  kegiatanId    String?
+  unitId        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Dinas    Dinas     @relation(fields: [dinasId], references: [id])
+  Kegiatan Kegiatan? @relation(fields: [kegiatanId], references: [id])
+  Unit     Unit?     @relation(fields: [unitId], references: [id])
+}
+
+model PembangunanDPASub {
+  id            String @id @default(cuid())
+  dpaId         String
+  subKegiatanId String
+  sumberDanaId  String
+  pagu          Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  SubKegiatan SubKegiatan @relation(fields: [subKegiatanId], references: [id])
+  SumberDana  SumberDana  @relation(fields: [sumberDanaId], references: [id])
+}
+
+model PembangunanMonitoring {
+  id            String @id @default(cuid())
+  dinasId       String
+  namaPekerjaan String
+  progres       Int    @default(0)
+  subKegiatanId String
+  tahun         Int
+
+  pelaksanaKontrak   String
+  nilaiKontrak       Int?
+  noKontrak          String?
+  jenisPengadaan     String?
+  mekanismePengadaan String?
+  swakelola          String?
+  tanggalKontrak     DateTime?
+  tanggalMulai       DateTime?
+  tanggalSelesai     DateTime?
+  ppk                String?
+  lokasi             String?
+  kendala            String?
+  tenagaKerja        Int?
+  penerapanK3        String?
+  keterangan         String?   @db.LongText
+  realisasi          String?
+
+  isAsuransi               Int?
+  isRencanaKecelakaan      Int?
+  isP3k                    Int?
+  isRambu                  Int?
+  tukangAsal               String?
+  isTukangSkt              Int?
+  jumlahPekerja            Int?
+  jumlahPekerjaPesibar     Int?
+  jumlahPekerjaLuarPesibar Int?
+  materialPesibar          String?
+  materialLuarPesibar      String?
+
+  createdAt                           DateTime                              @default(now())
+  updatedAt                           DateTime                              @updatedAt
+  PembangunanMonitoringBlanko         PembangunanMonitoringBlanko[]
+  PembangunanMonitoringDokumentasi    PembangunanMonitoringDokumentasi[]
+  SubKegiatan                         SubKegiatan                           @relation(fields: [subKegiatanId], references: [id])
+  Dinas                               Dinas                                 @relation(fields: [dinasId], references: [id])
+  PembangunanMonitoringBlankoKategori PembangunanMonitoringBlankoKategori[]
+}
+
+model PembangunanMonitoringBlanko {
+  id           String @id @default(cuid())
+  kategoriId   String
+  pekerjaan    String
+  volume       Int
+  satuan       String
+  harga        Int
+  total        Int
+  monitoringId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  monitoring PembangunanMonitoring               @relation(fields: [monitoringId], references: [id])
+  kategori   PembangunanMonitoringBlankoKategori @relation(fields: [kategoriId], references: [id])
+}
+
+model PembangunanMonitoringBlankoKategori {
+  id           String @id @default(cuid())
+  nama         String
+  monitoringId String
+  total        Int
+
+  createdAt                   DateTime                      @default(now())
+  updatedAt                   DateTime                      @updatedAt
+  PembangunanMonitoringBlanko PembangunanMonitoringBlanko[]
+  Monitoring                  PembangunanMonitoring         @relation(fields: [monitoringId], references: [id])
+}
+
+model PembangunanMonitoringDokumentasi {
+  id           String @id @default(cuid())
+  monitoringId String
+  url          String
+
+  monitoring PembangunanMonitoring @relation(fields: [monitoringId], references: [id])
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+}
